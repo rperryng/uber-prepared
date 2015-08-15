@@ -79,7 +79,7 @@ function cancelMiddleware(req, res, next) {
       return;
     }
 
-    res.status(200).send('Your request has been cancelled.  Text another address to start a new request');
+    res.status(200).send('Your request has been cancelled.  Text another address to start a new request.');
   });
 }
 
@@ -138,7 +138,7 @@ function requestTime(req, res, next) {
   if (req.user.state !== 'request-time') return next();
 
   var time = messageParser.parseTime(req.body.Body);
-  if (!time.hours || !time.minutes) {
+  if (time.hours === undefined || time.hours === null || time.minutes === undefined || time.minutes === null) {
     res.status(200).send('Oh no! We couldn\'t understand that. Please enter your pick-up time again.');
   }
   var user = req.user;
@@ -150,7 +150,7 @@ function requestTime(req, res, next) {
       return;
     }
     logger.info('hours %d minutes %d', time.hours, time.minutes);
-    res.status(200).send('Pick up at ' + time.hours + ":" + time.minutes + '?');
+    res.status(200).send('Pick up at ' + time.hours + ":" + ((time.minutes === 0) ? '00' : time.minutes) + '?');
   });
 }
 
@@ -170,7 +170,7 @@ function confirmTime(req, res, next) {
       res.status(200).send('Request successfully submitted.');
     });
   } else {
-    user.state = 'confirm-time';
+    user.state = 'request-time';
     user.save(function (err, user) {
       if (err) {
         logger.error(err);
