@@ -7,7 +7,8 @@ var logger = require('logger');
 module.exports = {
 	parseLocation: parseLocation,
 	parseConfirmation: parseConfirmation,
-	parseTime: parseTime
+	parseTime: parseTime,
+	parseCancel: parseCancel
 };
 
 function parseLocation(message, cb) {
@@ -21,6 +22,7 @@ function parseLocation(message, cb) {
 		}
 
 		body = JSON.parse(body);
+		logger.info(body);
 		var bestMatch = body.results[0];
 		var data = {
 			address: bestMatch.formatted_address,
@@ -56,4 +58,8 @@ function parseTime(message) {
 	}
 
 	return {hours: hours, minutes: minutes};
+}
+
+function parseCancel(message) {
+	return /cancel/i.test(message);
 }
