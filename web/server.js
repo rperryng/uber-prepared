@@ -24,6 +24,7 @@ app.use(bodyParser.urlencoded({
 app.use(morgan('dev', {stream: logger.morganStream}));
 
 app.use(require('./server/twilio-routes.js'));
+app.use(require('./server/uber-routes.js'));
 
 app.use(function (req, res, next) {
   res.sendStatus(404);

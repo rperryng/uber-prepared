@@ -9,7 +9,10 @@ var messageParser = require('./message-parser.js');
 
 var app = module.exports = express();
 
-app.post('/register', function (req, res, next) {
+var router = express.Router();
+app.use('/twilio', router);
+
+router.post('/register', function (req, res, next) {
   var number = req.body.number;
 
   if (!number) {
@@ -34,13 +37,13 @@ app.post('/register', function (req, res, next) {
     user.save(function (err, user) {
       if (err) return next(err);
 
-      res.status(200).send('User with ' + number + ' created successfully\n'
-        + 'Type an address to request an Uber. Text CANCEL to cancel this request at any time.');
+      res.status(200).send('User with ' + number + ' created successfully\n' +
+        'Type an address to request an Uber. Text CANCEL to cancel this request at any time.');
     });
   });
 });
 
-app.post('/twilio-callback',
+router.post('/callback',
   firstTimeUser,
   cancelMiddleware,
   requestLocation,
@@ -153,7 +156,7 @@ function confirmTime(req, res, next) {
 }
 
 // Error handling middleware
-app.use(function (err, req, res, next) {
+router.use(function (err, req, res, next) {
   logger.error(err);
   logger.error(err.stack);
 

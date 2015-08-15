@@ -3,7 +3,6 @@
 var request = require('request');
 var logger = require('logger');
 
-
 module.exports = {
 	parseLocation: parseLocation,
 	parseConfirmation: parseConfirmation,
@@ -12,14 +11,12 @@ module.exports = {
 };
 
 function parseLocation(message, cb) {
-	var url = 'https://maps.googleapis.com/maps/api/place/textsearch/json?query='
-		+ encodeURIComponent(message) + '&key=' + process.env.API_KEY;
+	var url = 'https://maps.googleapis.com/maps/api/place/textsearch/json';
+	url += '?query=' + encodeURIComponent(message);
+	url += '&key=' + process.env.API_KEY;
 
 	request.get({url: url}, function (err, response, body) {
-		if (err) {
-			cb(err);
-			return;
-		}
+		if (err) return cb(err);
 
 		body = JSON.parse(body);
 		logger.info(body);
