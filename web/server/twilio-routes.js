@@ -30,7 +30,7 @@ app.post('/register', function (req, res, next) {
     user = new User({
       uuid: uuid.v4(),
       number: number,
-      state: 'clean',
+      state: 'request-location',
       token: 'null'
     });
     user.save(function (err, user) {
@@ -75,16 +75,29 @@ function requestLocation(req, res, next) {
   		return;
   	}
   	logger.info(data);
-  	res.status(200).send(data.name + "\n" + data.address);
+  	res.status(200).send(data.name + '\n' + data.address + '\nIs this correct?');
   });
 }
 
 function confirmLocation(req, res, next) {
   if (req.user.state !== 'confirm-location') return next();
 
-
 }
 
 function requestTime(req, res, next) {
+  if (req.user.state !== 'request-time') return next();
+
+  messageParser.parseTime(req.body.Body, function (err, data) {
+    if (err) {
+      logger.error(err);
+      res.sendStatus(500);
+      return;
+    }
+    logger.info(data);
+  });
+}
+
+function confirmTime(req, res, next) {
   if (req.user.state !== 'confirm-time') return next();
+
 }

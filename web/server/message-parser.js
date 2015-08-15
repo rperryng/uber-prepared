@@ -5,7 +5,8 @@ var logger = require('logger');
 
 
 module.exports = {
-	parseLocation: parseLocation
+	parseLocation: parseLocation,
+	parseTime: parseTime
 };
 
 function parseLocation(message, cb) {
@@ -30,4 +31,6 @@ function parseLocation(message, cb) {
 	});
 }
 
+function parseTime(message, cb) {
 
+}
