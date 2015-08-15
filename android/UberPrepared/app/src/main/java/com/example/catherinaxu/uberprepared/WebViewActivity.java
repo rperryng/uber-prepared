@@ -2,32 +2,40 @@ package com.example.catherinaxu.uberprepared;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.Toast;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 
-public class MainActivity extends Activity {
+public class WebViewActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_web_view);
+
+        TelephonyManager tMgr = (TelephonyManager) this.getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
+        String phoneNumber = tMgr.getLine1Number();
+
+        WebView myWebView = (WebView) findViewById(R.id.webView);
+
+        myWebView.setWebViewClient(new WebViewClient() {
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                view.loadUrl(url);
+                return true;
+            }
+        });
+        myWebView.loadUrl("https://9fcb1195.ngrok.io/uber/signup/" + phoneNumber);
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(R.menu.menu_web_view, menu);
         return true;
     }
 
@@ -42,23 +50,7 @@ public class MainActivity extends Activity {
         if (id == R.id.action_settings) {
             return true;
         }
+
         return super.onOptionsItemSelected(item);
-    }
-
-    public void submitClicked(View view) {
-        Intent intent = new Intent(this, WebViewActivity.class);
-        startActivity(intent);
-
-//      Intent implementation
-//      Uri uri = Uri.parse("https://12e819b0.ngrok.io/uber/signup/" + phoneNumber);
-//      Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-//      startActivity(intent);
-
-
-
-
-
-
-
     }
 }
