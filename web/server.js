@@ -24,12 +24,12 @@ app.use(bodyParser.urlencoded({
 app.use(morgan('dev', {stream: logger.morganStream}));
 
 app.use(require('./server/twilio-routes.js'));
-app.use(require('./server/uber-routes.js'));
+app.use(require('./server/uber-oauth-routes.js'));
 
 app.use(function (req, res, next) {
   res.sendStatus(404);
 });
 
 app.listen(process.env.PORT, function () {
-  console.log('listening on port >>> ' + process.env.PORT);
+  logger.info('listening on port >>> ' + process.env.PORT);
 });

@@ -4,23 +4,10 @@ var express = require('express');
 var async = require('async');
 var request = require('request');
 var logger = require('logger');
+var uuid = require('node-uuid');
 var User = require('./user.model.js');
 
-var session = require('express-session');
-var MongoStore = require('connect-mongo')(session);
-var mongoose = require('mongoose');
-
 var app = module.exports = express();
-
-// Session management
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  store: new MongoStore({
-    mongooseConnection: mongoose.connection,
-  })
-}));
 
 var router = express.Router();
 app.use('/uber', router);
@@ -38,31 +25,31 @@ router.get('/signup/:number', function (req, res, next) {
       return;
     }
 
-    logger.info(encodeURIComponent(REDIRECT_URI + '?number=' + number));
-
     var uberSigninUrl = 'https://login.uber.com/oauth/authorize';
     uberSigninUrl += '?response_type=code';
     uberSigninUrl += '&client_id=' + process.env.UBER_CLIENT_ID;
     uberSigninUrl += '&scope=' + encodeURIComponent(['profile', 'request'].join(' '));
-    uberSigninUrl += '&redirect_uri=' + encodeURIComponent(REDIRECT_URI + '?number=' + number);
+    uberSigninUrl += '&redirect_uri=' + encodeURIComponent(REDIRECT_URI);
+    uberSigninUrl += '&state=' + number;
     res.redirect(uberSigninUrl);
   });
 });
 
 router.get('/callback', function (req, res, next) {
-  var number = req.param('number');
-  var authorizationCode = req.param('code');
-
-  var requestData = {
-    client_secret: process.env.UBER_CLIENT_SECRET,
-    client_id: process.env.UBER_CLIENT_ID,
-    grant_type: 'authorization_code',
-    redirect_uri: REDIRECT_URI,
-    code: authorizationCode
-  };
+  var authorizationCode = req.query.code;
+  var number = req.query.state;
 
   async.waterfall([
     function (callback) {
+      logger.info('swag');
+      var requestData = {
+        client_secret: process.env.UBER_CLIENT_SECRET,
+        client_id: process.env.UBER_CLIENT_ID,
+        grant_type: 'authorization_code',
+        redirect_uri: REDIRECT_URI,
+        code: authorizationCode
+      };
+
       request.post({
         url: 'https://login.uber.com/oauth/token',
         form: requestData
@@ -71,19 +58,30 @@ router.get('/callback', function (req, res, next) {
       });
     },
     function (body, callback) {
+      body = JSON.parse(body);
       User.findOne({number: number}, function (err, user) {
         callback(err, user, body);
       });
     },
     function (user, body, callback) {
-      user.bearer_token = body.access_token;
-      user.refresh_token = body.refresh_token;
+      user = new User({
+        uuid: uuid.v4(),
+        number: number,
+        state: 'request-location',
+        access_token: body.access_token,
+        refresh_token: body.refresh_token
+      });
       user.save(function (err, user) {
         callback(err, user);
       });
     }
   ], function (err, user) {
     if (err) return next(err);
-
+    res.sendStatus(200);
   });
+});
+
+app.use(function (err, req, res, next) {
+  logger.error(err.stack);
+  if (res) res.sendStatus(500);
 });
