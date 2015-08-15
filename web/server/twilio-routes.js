@@ -4,9 +4,45 @@ var express = require('express');
 var logger = require('logger');
 var uuid = require('node-uuid');
 var User = require('./user.model.js');
-var messageParser = require('./message-parser.js')
+var messageParser = require('./message-parser.js');
 
 var app = module.exports = express();
+
+app.post('/register', function (req, res, next) {
+  var number = req.body.number;
+
+  if (!number) {
+    res.status(400).send('Can\'t create user without phone number');
+    return;
+  }
+
+  if (User.findOne({number: number}, function (err, user) {
+    if (err) {
+      logger.error(err);
+      return next(err);
+    }
+
+    if (user) {
+      res.status(400).send('A user with phone number ' + number + ' already exists');
+      return;
+    }
+
+    user = new User({
+      uuid: uuid.v4(),
+      number: number,
+      state: 'clean',
+      token: 'null'
+    });
+    user.save(function (err, user) {
+      if (err) {
+        logger.error(err);
+        return next(err);
+      }
+
+      res.status(200).send('User with ' + number + ' created successfully');
+    })
+  }));
+});
 
 app.post('/twilio-callback', firstTimeUser, requestLocation);
 
