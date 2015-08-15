@@ -1,7 +1,9 @@
 package com.example.catherinaxu.uberprepared;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -106,6 +108,34 @@ public class RequestUber extends Activity {
                 // no results
                 if (matches.size() == 0) {
                     Toast.makeText(this, "Destination not found. Please try again.", Toast.LENGTH_SHORT).show();
+                } else {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+                    // build address
+                    String address = "";
+                    for (int i = 0; i <= matches.get(0).getMaxAddressLineIndex(); i++) {
+                        if (address.equals("")) {
+                            address += matches.get(0).getAddressLine(i);
+                        } else {
+                            address = address + ", " + matches.get(0).getAddressLine(i);
+                        }
+
+                    }
+                    builder.setMessage("Is this where you want to go? -> " + address)
+                            .setCancelable(false)
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    //launch new activity with stats and update page
+                                    dialog.cancel();
+                                }
+                            })
+                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            });
+                    AlertDialog alert = builder.create();
+                    alert.show();
                 }
 
             } catch (IOException exception) {
