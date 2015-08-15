@@ -40,7 +40,7 @@ app.post('/register', function (req, res, next) {
       }
 
       res.status(200).send('User with ' + number + ' created successfully\n'
-        + 'Type an address to request an Uber.');
+        + 'Type an address to request an Uber. Text CANCEL to cancel this request at any time.');
     });
   });
 });
