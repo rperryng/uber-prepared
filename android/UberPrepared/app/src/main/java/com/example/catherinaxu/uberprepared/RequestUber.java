@@ -2,6 +2,8 @@ package com.example.catherinaxu.uberprepared;
 
 import android.app.Activity;
 import android.content.Context;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -11,14 +13,18 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import com.google.android.gms.maps.model.LatLng;
 
 
 public class RequestUber extends Activity {
+    private static final int NUM_RESULTS = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +73,8 @@ public class RequestUber extends Activity {
     }
 
     public void submitClicked(View view) {
+        LatLng myloc;
+
         EditText date = (EditText) findViewById(R.id.date);
         String da = date.getText().toString();
 
@@ -84,8 +92,25 @@ public class RequestUber extends Activity {
         }
 
         if (p.equals("Current Location")) {
-            LatLng myloc = getMyLocation();
-            Toast.makeText(this, String.valueOf(myloc.latitude) + " " + String.valueOf(myloc.longitude), Toast.LENGTH_SHORT).show();
+            myloc = getMyLocation();
+        }
+
+        //obtain latlng from the destination string
+        Geocoder geocoder = new Geocoder(this, Locale.US);
+        if (!geocoder.isPresent()) { //what is this error?
+            Toast.makeText(this, "Something went wrong. Please try again.", Toast.LENGTH_SHORT).show();
+        } else {
+            try {
+                List<Address> matches = geocoder.getFromLocationName(de, NUM_RESULTS);
+
+                // no results
+                if (matches.size() == 0) {
+                    Toast.makeText(this, "Destination not found. Please try again.", Toast.LENGTH_SHORT).show();
+                }
+
+            } catch (IOException exception) {
+                Toast.makeText(this, "Something went wrong. Please try again.", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
