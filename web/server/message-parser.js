@@ -3,20 +3,12 @@
 var request = require('request');
 var logger = require('logger');
 
-var COMMANDS = {
-	SUPPORT: 'SUPPORT',
-	HELP: 'HELP',
-	REQUEST: 'REQUEST',
-	STOP: 'STOP',
-	MODIFY: 'MODIFY',
-	CANCEL: 'CANCEL'
-};
 
 module.exports = {
-	parseMessage: parseMessage
+	parseLocation: parseLocation
 };
 
-function parseMessage(message, cb) {
+function parseLocation(message, cb) {
 	var url = 'https://maps.googleapis.com/maps/api/place/textsearch/json?query='
 		+ encodeURIComponent(message) + '&key=' + process.env.API_KEY;
 
@@ -33,6 +25,9 @@ function parseMessage(message, cb) {
 			location: bestMatch.geometry.location,
 			name: bestMatch.name
 		};
+
 		cb(null, data);
 	});
 }
+
+

@@ -4,7 +4,7 @@ var express = require('express');
 var logger = require('logger');
 var uuid = require('node-uuid');
 var User = require('./user.model.js');
-var messageParser = require('')
+var messageParser = require('./message-parser.js')
 
 var app = module.exports = express();
 
@@ -30,17 +30,23 @@ function firstTimeUser(req, res, next) {
 }
 
 function requestLocation(req, res, next) {
-  if (req.user.state !== 'confirm-location') return next();
+  if (req.user.state !== 'request-location') return next();
 
-  messageParser.parseMessage(req.body.Body, function (err, data) {
+  messageParser.parseLocation(req.body.Body, function (err, data) {
   	if (err) {
   		logger.error(err);
   		res.sendStatus(500);
   		return;
   	}
   	logger.info(data);
-  	res.sendStatus(200);
+  	res.status(200).send(data.name + "\n" + data.address);
   });
+}
+
+function confirmLocation(req, res, next) {
+  if (req.user.state !== 'confirm-location') return next();
+
+
 }
 
 function requestTime(req, res, next) {

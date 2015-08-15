@@ -7,8 +7,6 @@ var logger = require('logger');
 var env = require('node-env-file');
 var mongoose = require('mongoose');
 
-var messageParser = require('./message-parser.js');
-
 env(__dirname + '/.env');
 
 var app = express();
