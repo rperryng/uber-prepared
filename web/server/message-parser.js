@@ -45,9 +45,6 @@ function parseTime(message) {
 	var marker = time[3];
 
 	logger.info('TimeParser hours %d minutes %d', hours, minutes);
-	if (hours < 12 && marker !== undefined) {
-		hours += (marker.toLowerCase() === 'p') ? 12 : 0;
-	}
 
 	if (!hours && (hours < 0 || hours > 24)) {
 		hours = undefined;
@@ -55,6 +52,11 @@ function parseTime(message) {
 
 	if (!minutes && (minutes < 0 || minutes > 60)) {
 		minutes = undefined;
+	}
+
+	if ((hours !== undefined) && (hours < 12 && marker !== undefined)) {
+		hours = parseInt(hours);
+		hours += (marker.toLowerCase() === 'p') ? 12 : 0;
 	}
 
 	return {hours: hours, minutes: minutes};
