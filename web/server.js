@@ -5,12 +5,16 @@ var bodyParser = require('body-parser');
 var morgan = require('morgan');
 var logger = require('logger');
 var env = require('node-env-file');
+var mongoose = require('mongoose');
 
 var messageParser = require('./message-parser.js');
 
 env(__dirname + '/.env');
 
 var app = express();
+
+// Connect to MongoDB
+mongoose.connect(process.env.DB_URI);
 
 // Parse url encoded form data
 app.use(bodyParser.json());
@@ -21,19 +25,7 @@ app.use(bodyParser.urlencoded({
 // Request logging
 app.use(morgan('dev', {stream: logger.morganStream}));
 
-app.post('/twilio-callback', function (req, res, next) {
-  logger.debug('from: %s', req.body.From);
-  logger.debug('with message %s', req.body.Body);
-  messageParser.parseMessage(req.body.Body, function (err, data) {
-  	if (err) {
-  		logger.error(err);
-  		res.sendStatus(500);
-  		return;
-  	}
-  	logger.info(data);
-  	res.sendStatus(200);
-  })
-});
+app.use(require('./server/twilio-routes.js'));
 
 app.use(function (req, res, next) {
   res.sendStatus(404);

@@ -4,8 +4,10 @@
   "dependencies": {
     "body-parser": "^1.13.3",
     "express": "^4.13.3",
+    "mongoose": "^4.1.2",
     "morgan": "^1.6.1",
     "node-env-file": "^0.1.7",
-    "request": "^2.60.0"
+    "request": "^2.60.0",
+    "node-uuid": "^1.4.3"
   }
 }
