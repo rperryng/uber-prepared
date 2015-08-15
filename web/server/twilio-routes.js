@@ -1,8 +1,9 @@
 'use strict';
 
 var express = require('express');
-var logger = require('logger');
+var async = require('async');
 var uuid = require('node-uuid');
+var logger = require('logger');
 var User = require('./user.model.js');
 var messageParser = require('./message-parser.js');
 
@@ -17,10 +18,7 @@ app.post('/register', function (req, res, next) {
   }
 
   User.findOne({number: number}, function (err, user) {
-    if (err) {
-      logger.error(err);
-      return next(err);
-    }
+    if (err) return next(err);
 
     if (user) {
       res.status(400).send('A user with phone number ' + number + ' already exists');
@@ -34,10 +32,7 @@ app.post('/register', function (req, res, next) {
       token: 'null'
     });
     user.save(function (err, user) {
-      if (err) {
-        logger.error(err);
-        return next(err);
-      }
+      if (err) return next(err);
 
       res.status(200).send('User with ' + number + ' created successfully\n'
         + 'Type an address to request an Uber. Text CANCEL to cancel this request at any time.');
@@ -45,19 +40,22 @@ app.post('/register', function (req, res, next) {
   });
 });
 
-app.post('/twilio-callback', firstTimeUser, cancelMiddleware, requestLocation, confirmLocation, requestTime, confirmTime);
+app.post('/twilio-callback',
+  firstTimeUser,
+  cancelMiddleware,
+  requestLocation,
+  confirmLocation,
+  requestTime,
+  confirmTime
+);
 
 function firstTimeUser(req, res, next) {
   User.findOne({number: req.body.From}, function (err, user) {
-    if (err) {
-      logger.error(err);
-      return next(err);
-    }
+    if (err) return next(err);
 
     // user exists, carry on
     if (user) {
       req.user = user;
-      logger.info('user state: ' + user.state);
       return next();
 
     } else {
@@ -73,12 +71,7 @@ function cancelMiddleware(req, res, next) {
   var user = req.user;
   user.state = 'request-location';
   user.save(function (err, user) {
-    if (err) {
-      logger.error(err);
-      res.sendStatus(500);
-      return;
-    }
-
+    if (err) return next(err);
     res.status(200).send('Your request has been cancelled.  Text another address to start a new request.');
   });
 }
@@ -87,20 +80,12 @@ function requestLocation(req, res, next) {
   if (req.user.state !== 'request-location') return next();
 
   messageParser.parseLocation(req.body.Body, function (err, data) {
-  	if (err) {
-  		logger.error(err);
-  		res.sendStatus(500);
-  		return;
-  	}
+  	if (err) return next(err);
 
     var user = req.user;
     user.state = 'confirm-location';
     user.save(function (err, user) {
-      if (err) {
-        logger.error(err);
-        res.sendStatus(500);
-        return;
-      }
+      if (err) return next(err);
       res.status(200).send(data.name + '\n' + data.address + '\nIs this correct?');
     });
   });
@@ -111,24 +96,18 @@ function confirmLocation(req, res, next) {
 
   var confirmed = messageParser.parseConfirmation(req.body.Body);
   var user = req.user;
+
   if (confirmed) {
     user.state = 'request-time';
     user.save(function (err, user) {
-      if (err) {
-        logger.error(err);
-        res.sendStatus(500);
-        return;
-      }
+      if (err) return next(err);
       res.status(200).send('What time would you like to be picked up?');
     });
+
   } else {
     user.state = 'request-location';
     user.save(function (err, user) {
-      if (err) {
-        logger.error(err);
-        res.sendStatus(500);
-        return;
-      }
+      if (err) return next(err);
       res.status(200).send('Oh no! Try being more specific.');
     });
   }
@@ -138,17 +117,14 @@ function requestTime(req, res, next) {
   if (req.user.state !== 'request-time') return next();
 
   var time = messageParser.parseTime(req.body.Body);
-  if (time.hours === undefined || time.hours === null || time.minutes === undefined || time.minutes === null) {
+  if (!time.hours || !time.minutes) {
     res.status(200).send('Oh no! We couldn\'t understand that. Please enter your pick-up time again.');
   }
+
   var user = req.user;
   user.state = 'confirm-time';
   user.save(function (err, user) {
-    if (err) {
-      logger.error(err);
-      res.sendStatus(500);
-      return;
-    }
+    if (err) return next(err);
     logger.info('hours %d minutes %d', time.hours, time.minutes);
     res.status(200).send('Pick up at ' + time.hours + ":" + ((time.minutes === 0) ? '00' : time.minutes) + '?');
   });
@@ -159,25 +135,28 @@ function confirmTime(req, res, next) {
 
   var confirmed = messageParser.parseConfirmation(req.body.Body);
   var user = req.user;
+
   if (confirmed) {
     user.state = 'submitted';
     user.save(function (err, user) {
-      if (err) {
-        logger.error(err);
-        res.sendStatus(500);
-        return;
-      }
+      if (err) return next(err);
       res.status(200).send('Request successfully submitted.');
     });
+
   } else {
     user.state = 'request-time';
     user.save(function (err, user) {
-      if (err) {
-        logger.error(err);
-        res.sendStatus(500);
-        return;
-      }
+      if (err) return next(err);
       res.status(200).send('Oh no! Please enter your pick-up time again.');
     });
   }
 }
+
+// Error handling middleware
+app.use(function (err, req, res, next) {
+  logger.error(err);
+  logger.error(err.stack);
+
+  if (!res) return;
+  res.status(500).send('Something horrible has happened - See logs');
+});
