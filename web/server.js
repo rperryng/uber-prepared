@@ -6,6 +6,8 @@ var morgan = require('morgan');
 var logger = require('logger');
 var env = require('node-env-file');
 
+var messageParser = require('./message-parser.js');
+
 env(__dirname + '/.env');
 
 var app = express();
@@ -22,7 +24,15 @@ app.use(morgan('dev', {stream: logger.morganStream}));
 app.post('/twilio-callback', function (req, res, next) {
   logger.debug('from: %s', req.body.From);
   logger.debug('with message %s', req.body.Body);
-  res.sendStatus(200);
+  messageParser.parseMessage(req.body.Body, function (err, data) {
+  	if (err) {
+  		logger.error(err);
+  		res.sendStatus(500);
+  		return;
+  	}
+  	logger.info(data);
+  	res.sendStatus(200);
+  })
 });
 
 app.use(function (req, res, next) {
