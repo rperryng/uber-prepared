@@ -6,6 +6,7 @@ var logger = require('logger');
 
 module.exports = {
 	parseLocation: parseLocation,
+	parseConfirmation: parseConfirmation,
 	parseTime: parseTime
 };
 
@@ -31,6 +32,28 @@ function parseLocation(message, cb) {
 	});
 }
 
-function parseTime(message, cb) {
+function parseConfirmation(message) {
+	return /^y/i.test(message);
+}
 
+function parseTime(message) {
+	var time = /^(\d\d?)\s?:?\s?(\d\d)?\s?(\w)?/i.exec(message);
+	var hours = time[1];
+	var minutes = time[2] || 0;
+	var marker = time[3];
+
+	logger.info('TimeParser hours %d minutes %d', hours, minutes);
+	if (hours < 12 && marker !== undefined) {
+		hours += (marker.toLowerCase() === 'p') ? 12 : 0;
+	}
+
+	if (!hours && (hours < 0 || hours > 24)) {
+		hours = undefined;
+	}
+
+	if (!minutes && (minutes < 0 || minutes > 60)) {
+		minutes = undefined;
+	}
+
+	return {hours: hours, minutes: minutes};
 }
