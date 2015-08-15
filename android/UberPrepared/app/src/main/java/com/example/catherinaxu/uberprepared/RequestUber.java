@@ -2,13 +2,16 @@ package com.example.catherinaxu.uberprepared;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,6 +30,8 @@ import com.google.android.gms.maps.model.LatLng;
 
 public class RequestUber extends Activity {
     private static final int NUM_RESULTS = 1;
+    private static LatLng pickupCoords;
+    private static LatLng destinationCoords;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,78 +79,7 @@ public class RequestUber extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void submitClicked(View view) {
-        LatLng myloc;
-
-        EditText date = (EditText) findViewById(R.id.date);
-        String da = date.getText().toString();
-
-        EditText time = (EditText) findViewById(R.id.time);
-        String t = time.getText().toString();
-
-        EditText pickup = (EditText) findViewById(R.id.pickup);
-        String p = pickup.getText().toString();
-
-        EditText destination = (EditText) findViewById(R.id.destination);
-        String de = destination.getText().toString();
-
-        if (de.equals("") || t.equals("") || p.equals("") || de.equals("")) {
-            Toast.makeText(this, "Please enter a value for all of the fields", Toast.LENGTH_SHORT).show();
-        }
-
-        if (p.equals("Current Location")) {
-            myloc = getMyLocation();
-        }
-
-        //obtain latlng from the destination string
-        Geocoder geocoder = new Geocoder(this, Locale.US);
-        if (!geocoder.isPresent()) { //what is this error?
-            Toast.makeText(this, "Something went wrong. Please try again.", Toast.LENGTH_SHORT).show();
-        } else {
-            try {
-                List<Address> matches = geocoder.getFromLocationName(de, NUM_RESULTS);
-
-                // no results
-                if (matches.size() == 0) {
-                    Toast.makeText(this, "Destination not found. Please try again.", Toast.LENGTH_SHORT).show();
-                } else {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-                    // build address
-                    String address = "";
-                    for (int i = 0; i <= matches.get(0).getMaxAddressLineIndex(); i++) {
-                        if (address.equals("")) {
-                            address += matches.get(0).getAddressLine(i);
-                        } else {
-                            address = address + ", " + matches.get(0).getAddressLine(i);
-                        }
-
-                    }
-                    builder.setMessage("Is this where you want to go? -> " + address)
-                            .setCancelable(false)
-                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    //launch new activity with stats and update page
-                                    dialog.cancel();
-                                }
-                            })
-                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    dialog.cancel();
-                                }
-                            });
-                    AlertDialog alert = builder.create();
-                    alert.show();
-                }
-
-            } catch (IOException exception) {
-                Toast.makeText(this, "Something went wrong. Please try again.", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-
-    /*
+   /*
     * Returns the user's current location as a LatLng object.
     * Returns null if location could not be found (such as in an AVD emulated virtual device).
     */
@@ -171,4 +105,175 @@ public class RequestUber extends Activity {
         }
     }
 
+    private void buildSuccessAlert() {
+        AlertDialog.Builder builder2 = new AlertDialog.Builder(RequestUber.this);
+        builder2.setMessage("Uber booked successfully!");
+        AlertDialog alert2 = builder2.create();
+        alert2.show();
+    }
+
+    private void deployNotification() {
+        NotificationCompat.Builder Builder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.arrow)
+                        .setContentTitle("Uber Prepared")
+                        .setContentText("Hello World!")
+                        .setOngoing(true);
+
+        int NotificationId = 001;
+
+        NotificationManager NotifyMgr =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+        NotifyMgr.notify(NotificationId, Builder.build());
+    }
+
+    public List<Address> findGeoMatches(String location) {
+        Geocoder geocoder = new Geocoder(this, Locale.US);
+        List<Address> matches = null;
+        //obtain latlng from the destination string
+        if (!geocoder.isPresent()) {
+            Toast.makeText(this, "Something went wrong. Please try again.", Toast.LENGTH_SHORT).show();
+        } else {
+            try {
+                matches = geocoder.getFromLocationName(location, NUM_RESULTS);
+
+                // no results
+                if (matches.size() == 0) {
+                    Toast.makeText(this, location + " not found. Please try again.", Toast.LENGTH_SHORT).show();
+                } else {
+                    return matches;
+                }
+            } catch (IOException exception) {
+                Toast.makeText(this, "Something went wrong. Please try again.", Toast.LENGTH_SHORT).show();
+            }
+        }
+        return matches;
+    }
+
+    public String buildAddress(List<Address> matches) {
+        String address = "";
+        for (int i = 0; i <= matches.get(0).getMaxAddressLineIndex(); i++) {
+            if (address.equals("")) {
+                address += matches.get(0).getAddressLine(i);
+            } else {
+                address = address + ", " + matches.get(0).getAddressLine(i);
+            }
+        }
+        return address;
+    }
+
+    public void submitClicked(View view) {
+
+        EditText date = (EditText) findViewById(R.id.date);
+        final String da = date.getText().toString();
+
+        EditText time = (EditText) findViewById(R.id.time);
+        final String t = time.getText().toString();
+
+        EditText pickup = (EditText) findViewById(R.id.pickup);
+        final String p = pickup.getText().toString();
+
+        EditText destination = (EditText) findViewById(R.id.destination);
+        final String de = destination.getText().toString();
+
+        if (de.equals("") || t.equals("") || p.equals("") || de.equals("")) {
+            Toast.makeText(this, "Please enter a value for all of the fields", Toast.LENGTH_SHORT).show();
+        }
+
+        //use curr location
+        if (p.equals("Current Location")) {
+            pickupCoords = getMyLocation();
+            //confirm destination
+            final List<Address> dmatches = findGeoMatches(de);
+
+            //give the user another chance
+            if (dmatches == null || dmatches.size() == 0) return;
+
+            AlertDialog.Builder builder2 = new AlertDialog.Builder(RequestUber.this);
+            String daddress = buildAddress(dmatches);
+
+            builder2.setMessage("Is this your destination location? -> " + daddress)
+                    .setCancelable(false)
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+
+                            // send HTTP post, and make sure it works
+
+                            dialog.cancel();
+                            buildSuccessAlert();
+                            deployNotification();
+                        }
+                    })
+                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                        }
+                    });
+
+                    AlertDialog alert = builder2.create();
+                    alert.show();
+
+        //do same for pickup as for dest
+        } else {
+            final List<Address> pmatches = findGeoMatches(p);
+
+            //give the user another chance
+            if (pmatches == null || pmatches.size() == 0) return;
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            String paddress = buildAddress(pmatches);
+
+            builder.setMessage("Is this your pickup location? -> " + paddress)
+                   .setCancelable(false)
+                   .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+
+                            //on fail
+                            dialog.cancel();
+
+                            //on success
+                            pickupCoords = new LatLng(pmatches.get(0).getLatitude(), pmatches.get(0).getLongitude());
+
+                            //confirm destination
+                            final List<Address> dmatches = findGeoMatches(de);
+
+                            //give the user another chance
+                            if (dmatches == null || dmatches.size() == 0) return;
+
+                            AlertDialog.Builder builder2 = new AlertDialog.Builder(RequestUber.this);
+                            String daddress = buildAddress(dmatches);
+
+                            builder2.setMessage("Is this your destination location? -> " + daddress)
+                                    .setCancelable(false)
+                                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+
+                                            // send HTTP post, and make sure it works
+
+                                            dialog.cancel();
+                                            buildSuccessAlert();
+                                            deployNotification();
+                                        }
+                                    })
+                                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            dialog.cancel();
+                                        }
+                                    });
+                            AlertDialog alert = builder2.create();
+                            alert.show();
+                        }
+                    })
+                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                        }
+                    });
+
+
+            AlertDialog alert = builder.create();
+            alert.show();
+        }
+    }
 }
