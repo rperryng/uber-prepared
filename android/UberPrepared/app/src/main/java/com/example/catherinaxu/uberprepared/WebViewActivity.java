@@ -3,11 +3,14 @@ package com.example.catherinaxu.uberprepared;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
@@ -30,19 +33,35 @@ public class WebViewActivity extends Activity {
         getActionBar().hide();
 
         TelephonyManager tMgr = (TelephonyManager) this.getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
-        String phoneNumber = tMgr.getLine1Number();
+        final String phoneNumber = tMgr.getLine1Number();
+
+        // removes all cookies during a fresh install
+        CookieManager cookieManager = CookieManager.getInstance();
+        cookieManager.removeAllCookies(null);
 
         WebView myWebView = (WebView) findViewById(R.id.webView);
 
         myWebView.setWebViewClient(new WebViewClient() {
+
+            @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 view.loadUrl(url);
                 return true;
             }
+
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                if (url.startsWith("https://9fcb1195.ngrok.io/uber/callback?state=" + phoneNumber + "&code=")) {
+                    Intent intent = new Intent(WebViewActivity.this, RequestUber.class);
+                    startActivity(intent);
+                }
+
+                super.onPageStarted(view, url, favicon);
+            }
+
         });
 
         myWebView.loadUrl("https://9fcb1195.ngrok.io/uber/signup/" + phoneNumber);
-
     }
 
 
