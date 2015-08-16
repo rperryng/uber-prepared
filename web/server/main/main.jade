@@ -1,0 +1,17 @@
+doctype html
+
+html
+  head
+    title Uber Prepared
+    meta(name="viewport", content="width=device-width")
+    
+    if styles
+      each style in styles
+        link(href="/client/" + style + ".css", rel="stylesheet", type="text/css")
+      
+    if scripts
+      each script in scripts
+        script(href="/client/" + script + ".js", type="text/javascript")
+        
+  body
+    block content

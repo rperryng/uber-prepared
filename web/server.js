@@ -26,12 +26,17 @@ app.use(bodyParser.urlencoded({
 // Request logging
 app.use(morgan('dev', {stream: logger.morganStream}));
 
+// Expose front end resources
+app.use('/client', express.static(__dirname + '/client/dist'));
+app.use('/bower_components', express.static(__dirname + '/bower_components'));
+
 // Routing
 app.use(require('./server/twilio-routes.js'));
 app.use(require('./server/uber-oauth-routes.js'));
 app.use(require('./server/user-routes.js'));
 app.use(require('./server/uber-service-routes.js'));
 app.use(require('./server/android-routes.js'));
+app.use(require('./server/main'));
 
 app.use(function (req, res, next) {
   res.sendStatus(404);

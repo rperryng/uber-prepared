@@ -131,6 +131,8 @@ function requestStart(req, res, next) {
   messageParser.parseLocation(req.body.Body, function (err, data) {
   	if (err) return next(err);
 
+    logger.info('data: %j', data);
+
     var user = req.user;
     user.state = 'confirm-start';
     user.start = {
