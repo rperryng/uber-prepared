@@ -16,53 +16,15 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Enter your Uber credentials:"
-        android:id="@+id/instruction"
-        android:layout_marginBottom="51dp"
-        android:layout_above="@+id/username"
-        android:layout_alignStart="@+id/username" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="textPassword"
-        android:ems="10"
-        android:text="Password"
-        android:id="@+id/password"
-        android:layout_below="@+id/username"
-        android:layout_alignStart="@+id/username" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="textPersonName"
-        android:text="Username"
-        android:ems="10"
-        android:id="@+id/username"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
-
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="LOG IN"
+        android:text="SIGN IN WITH UBER"
         android:id="@+id/submit"
         android:nestedScrollingEnabled="false"
         android:onClick="submitClicked"
-        android:layout_below="@+id/savepw"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="51dp" />
+        android:layout_marginTop="51dp"
+        android:layout_centerVertical="true" />
 
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Save login information"
-        android:id="@+id/savepw"
-        android:layout_below="@+id/password"
-        android:layout_centerHorizontal="true"
-        android:checked="false" />
 </RelativeLayout>
