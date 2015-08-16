@@ -41,10 +41,8 @@ function parseTime(message) {
 	var timeUnit = time[2];
 	var minutesOrNothing = time[3] || 0;
 
-	logger.info('TimeParser hours %d minutes %d', hours, minutes);
-
-	var hours;
-	var minutes;
+	var hours = 0;
+	var minutes = 0;
 
 	if (hoursOrMins && timeUnit) {
 		if (timeUnit.toLowerCase() === 'h') {
