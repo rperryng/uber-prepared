@@ -2,13 +2,24 @@ package com.example.catherinaxu.uberprepared;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.koushikdutta.ion.Ion;
+import com.koushikdutta.ion.bitmap.Transform;
+import com.koushikdutta.async.future.Future;
+import com.koushikdutta.async.future.FutureCallback;
 
 public class WebViewActivity extends Activity {
 
@@ -16,6 +27,7 @@ public class WebViewActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_web_view);
+        getActionBar().hide();
 
         TelephonyManager tMgr = (TelephonyManager) this.getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
         String phoneNumber = tMgr.getLine1Number();
@@ -28,7 +40,9 @@ public class WebViewActivity extends Activity {
                 return true;
             }
         });
+
         myWebView.loadUrl("https://9fcb1195.ngrok.io/uber/signup/" + phoneNumber);
+
     }
 
 

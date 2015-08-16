@@ -14,6 +14,15 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.koushikdutta.ion.Ion;
+import com.koushikdutta.ion.bitmap.Transform;
+import com.koushikdutta.async.future.Future;
+import com.koushikdutta.async.future.FutureCallback;
+
 
 public class MainActivity extends Activity {
 
@@ -21,6 +30,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        getActionBar().hide();
     }
 
 
@@ -46,19 +56,35 @@ public class MainActivity extends Activity {
     }
 
     public void submitClicked(View view) {
-        Intent intent = new Intent(this, WebViewActivity.class);
-        startActivity(intent);
+        TelephonyManager tMgr = (TelephonyManager) this.getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
+        String phoneNumber = tMgr.getLine1Number();
+
+        Ion.with(this.getApplicationContext())
+                .load("https://9fcb1195.ngrok.io/users/" + phoneNumber)
+                .asJsonObject()
+                .setCallback(new FutureCallback<JsonObject>() {
+                    @Override
+                    public void onCompleted(Exception e, JsonObject result) {
+                        try {
+                            String exists = result.get("exists").toString();
+
+                            if (exists.equals("true")) {
+                                Intent intent = new Intent(MainActivity.this, RequestUber.class);
+                                startActivity(intent);
+                            } else {
+                                Intent intent = new Intent(MainActivity.this, WebViewActivity.class);
+                                startActivity(intent);
+                            }
+                        } catch (Exception ex) {
+                            Toast.makeText(MainActivity.this, "Something went wrong. Please try again.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
 
 //      Intent implementation
 //      Uri uri = Uri.parse("https://12e819b0.ngrok.io/uber/signup/" + phoneNumber);
 //      Intent intent = new Intent(Intent.ACTION_VIEW, uri);
 //      startActivity(intent);
-
-
-
-
-
-
 
     }
 }

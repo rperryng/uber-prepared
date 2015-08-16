@@ -37,6 +37,7 @@ public class RequestUber extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_request_uber);
+        getActionBar().hide();
 
         EditText date = (EditText) findViewById(R.id.date);
 
@@ -79,6 +80,10 @@ public class RequestUber extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+    public void onBackPressed() {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+    }
    /*
     * Returns the user's current location as a LatLng object.
     * Returns null if location could not be found (such as in an AVD emulated virtual device).
@@ -179,6 +184,7 @@ public class RequestUber extends Activity {
 
         if (de.equals("") || t.equals("") || p.equals("") || de.equals("")) {
             Toast.makeText(this, "Please enter a value for all of the fields", Toast.LENGTH_SHORT).show();
+            return;
         }
 
         //use curr location
