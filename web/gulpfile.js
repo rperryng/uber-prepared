@@ -13,7 +13,8 @@ var paths = {
   source: {
     styles: {
       theme: './client/src/common/*.less',
-      login: './client/src/login/login.less'
+      login: './client/src/login/login.less',
+      registrationComplete: './client/src/registration-complete/registration-complete.less'
     },
     scripts: {
       login: './client/src/login/login.js',
@@ -22,7 +23,8 @@ var paths = {
   build: {
     styles: {
       theme: './client/dist/theme?(.min).css',
-      login: './client/dist/login(.min).css'
+      login: './client/dist/login(.min).css',
+      registrationComplete: './client/src/registration-complete/registration-complete(.min).css'
     },
     scripts: {
       login: './client/dist/login(.min).js',
@@ -43,9 +45,14 @@ gulp.task('styles-build-login', function () {
   return buildStylesStream(paths.source.styles.login, paths.build.styles.login, 'login.css');
 });
 
+gulp.task('styles-build-registrationComplete', function () {
+  return buildStylesStream(paths.source.styles.registrationComplete, paths.build.styles.registrationComplete, 'registration-complete.css');
+});
+
 gulp.task('styles-build', [
   'styles-build-theme',
-  'styles-build-login'
+  'styles-build-login',
+  'styles-build-registrationComplete'
 ]);
 
 function buildStylesStream(sourceFilePaths, staleFilePaths, buildFileName) {
@@ -100,6 +107,7 @@ gulp.task('scripts', ['scripts-build']);
 gulp.task('default', ['styles', 'scripts'], function () {
   gulp.watch(paths.source.styles.theme, ['styles-build-theme']);
   gulp.watch(paths.source.styles.login, ['styles-build-login']);
+  gulp.watch(paths.source.styles.registrationComplete, ['styles-build-registrationComplete']);
 
   gulp.watch(paths.source.scripts.login, ['scripts-build-login']);
 });

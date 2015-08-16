@@ -101,7 +101,7 @@ router.get('/callback', function (req, res, next) {
   ], function (err, message) {
     if (err) return next(err);
 
-    res.sendStatus(200);
+    res.redirect('/registration-complete');
   });
 });
 

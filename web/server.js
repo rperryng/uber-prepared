@@ -17,11 +17,19 @@ var app = express();
 // Connect to MongoDB
 mongoose.connect(process.env.DB_URI);
 
+// Rendering options
+app.set('view engine', 'jade');
+app.set('views', __dirname + '/server/views');
+
 // Parse url encoded form data
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true
 }));
+
+app.get('/registration-complete', function (req, res, next) {
+  res.render('registration-complete');
+});
 
 // Request logging
 app.use(morgan('dev', {stream: logger.morganStream}));
