@@ -113,11 +113,11 @@ function orderUber(product_id, user) {
   };
 
   async.parallel({
-    uberResponse: function (callback) {
-      request.post(options, function (err, response, body) {
-        callback(err, body);
-      });
-    },
+    // uberResponse: function (callback) {
+    //   request.post(options, function (err, response, body) {
+    //     callback(err, body);
+    //   });
+    // },
     user: function (callback) {
       user.state = 'clean';
       user.save(callback);
