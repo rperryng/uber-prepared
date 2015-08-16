@@ -5,10 +5,12 @@ var async = require('async');
 var uuid = require('node-uuid');
 var logger = require('logger');
 var moment = require('moment');
+var twilio = require('twilio');
 var User = require('./user.model.js');
 var messageParser = require('./message-parser.js');
 
 var app = module.exports = express();
+var twilioClient = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
 
 var router = express.Router();
 app.use('/twilio', router);
@@ -17,7 +19,8 @@ router.post('/register', function (req, res, next) {
   var number = req.body.number;
 
   if (!number) {
-    res.status(400).send('Can\'t create user without phone number');
+    res.sendStatus(400);
+    sendMessage('Can\'t create user without phone number');
     return;
   }
 
@@ -25,7 +28,8 @@ router.post('/register', function (req, res, next) {
     if (err) return next(err);
 
     if (user) {
-      res.status(400).send('A user with phone number ' + number + ' already exists');
+      res.sendStatus(400);
+      sendMessage('A user with phone number ' + number + ' already exists');
       return;
     }
 
@@ -38,7 +42,8 @@ router.post('/register', function (req, res, next) {
     user.save(function (err, user) {
       if (err) return next(err);
 
-      res.status(200).send('User with ' + number + ' created successfully\n' +
+      res.sendStatus(200);
+      sendMessage('User with ' + number + ' created successfully\n' +
         'Type an address to request an Uber. Text CANCEL to cancel this request at any time.');
     });
   });
@@ -65,7 +70,8 @@ function firstTimeUser(req, res, next) {
       return next();
 
     } else {
-      res.status(200).send('Looks like you haven\'t signed up yet.  Get started with the following link: http://uber-prepared.com/register');
+      res.sendStatus(200);
+      sendMessage('Looks like you haven\'t signed up yet.  Get started with the following link: http://uber-prepared.com/register');
       return;
     }
   });
@@ -78,7 +84,8 @@ function cancelMiddleware(req, res, next) {
   user.state = 'request-start';
   user.save(function (err, user) {
     if (err) return next(err);
-    res.status(200).send('Your request has been cancelled.  Text another address to start a new request.');
+    res.sendStatus(200);
+    sendMessage('Your request has been cancelled.  Text another address to start a new request.');
   });
 }
 
@@ -96,7 +103,8 @@ function requestStart(req, res, next) {
     };
     user.save(function (err, user) {
       if (err) return next(err);
-      res.status(200).send(data.name + '\n' + data.address + '\nIs this correct?');
+      res.sendStatus(200);
+      sendMessage(data.name + '\n' + data.address + '\nIs this correct?');
     });
   });
 }
@@ -110,7 +118,8 @@ function confirmStart(req, res, next) {
     user.state = 'request-end';
     user.save(function (err, user) {
       if (err) return next(err);
-      res.status(200).send('What is your destination?');
+      res.sendStatus(200);
+      sendMessage('What is your destination?');
     });
 
   } else {
@@ -121,7 +130,8 @@ function confirmStart(req, res, next) {
     };
     user.save(function (err, user) {
       if (err) return next(err);
-      res.status(200).send('Oh no! Try being more specific.');
+      res.sendStatus(200);
+      sendMessage('Oh no! Try being more specific.');
     });
   }
 }
@@ -140,7 +150,8 @@ function requestEnd(req, res, next) {
     };
     user.save(function (err, user) {
       if (err) return next(err);
-      res.status(200).send(data.name + '\n' + data.address + '\nIs this correct?');
+      res.sendStatus(200);
+      sendMessage(data.name + '\n' + data.address + '\nIs this correct?');
     });
   });
 }
@@ -155,7 +166,8 @@ function confirmEnd(req, res, next) {
     user.state = 'request-time';
     user.save(function (err, user) {
       if (err) return next(err);
-      res.status(200).send('How soon would you like to be picked up (in hours/minutes)?');
+      res.sendStatus(200);
+      sendMessage('How soon would you like to be picked up (in hours/minutes)?');
     });
 
   } else {
@@ -166,7 +178,8 @@ function confirmEnd(req, res, next) {
     };
     user.save(function (err, user) {
       if (err) return next(err);
-      res.status(200).send('Oh no! Try being more specific.');
+      res.sendStatus(200);
+      sendMessage('Oh no! Try being more specific.');
     });
   }
 }
@@ -176,7 +189,8 @@ function requestTime(req, res, next) {
 
   var time = messageParser.parseTime(req.body.Body);
   if (time.hours <= 0 && time.minutes <= 0) {
-    res.status(200).send('Oh no! We couldn\'t understand that. Please enter how soon would you like to be picked up (in hours/minutes).');
+    res.sendStatus(200);
+    sendMessage('Oh no! We couldn\'t understand that. Please enter how soon would you like to be picked up (in hours/minutes).');
     return;
   }
 
@@ -200,7 +214,8 @@ function requestTime(req, res, next) {
     }
     timeConfirmationMessage += '?';
 
-    res.status(200).send(timeConfirmationMessage);
+    res.sendStatus(200);
+    sendMessage(timeConfirmationMessage);
   });
 }
 
@@ -214,7 +229,8 @@ function confirmTime(req, res, next) {
     user.state = 'submitted';
     user.save(function (err, user) {
       if (err) return next(err);
-      res.status(200).send('Request successfully submitted.');
+      res.sendStatus(200);
+      sendMessage('Request successfully submitted.');
     });
 
   } else {
@@ -222,7 +238,8 @@ function confirmTime(req, res, next) {
     user.time = 0;
     user.save(function (err, user) {
       if (err) return next(err);
-      res.status(200).send('Oh no! Try entering a time with the following format: 5 hours, 30 minutes.');
+      res.sendStatus(200);
+      ('Oh no! Try entering a time with the following format: 5 hours, 30 minutes.');
     });
   }
 }
@@ -233,5 +250,16 @@ router.use(function (err, req, res, next) {
   logger.error(err.stack);
 
   if (!res) return;
-  res.status(500).send('Something horrible has happened - See logs');
+  res.sendStatus(500);
+  sendMessage('Something horrible has happened - See logs');
 });
+
+
+function sendMessage(message, callback) {
+  var options = {
+    from: process.env.TWILIO_PHONE_NUM,
+    to: number,
+    body: message
+  }
+  twilioClient.messages.create(options, callback);
+}
