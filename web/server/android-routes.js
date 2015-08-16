@@ -38,3 +38,22 @@ router.post('/data', function (req, res, next) {
 	  }
 	});  
 });
+
+router.post('/cancel', function (req, res, next) {
+	var number = req.body.phone;
+
+	// find user by number
+	User.findOne({number: body.phone}, function (err, user) {
+    if (err) return next(err);
+
+    if (user) {
+      user.state = 'request-start';
+	    user.save(function (err, user) {
+		    if (err) return next(err);
+		    res.sendStatus(200);
+		  });
+
+		  uberServiceManager.placeOrder(user);
+	  }
+	});
+})
