@@ -39,15 +39,11 @@ public class RequestUber extends Activity {
         setContentView(R.layout.activity_request_uber);
         getActionBar().hide();
 
-        EditText date = (EditText) findViewById(R.id.date);
+        EditText hour = (EditText) findViewById(R.id.hour);
+        hour.setHint("Ex: 2 hours");
 
-        //obtain today's date
-        DateFormat dateFormat = new SimpleDateFormat("MM/dd/yy");
-        Date today = new Date();
-        date.setText(dateFormat.format(today));
-
-        EditText time = (EditText) findViewById(R.id.time);
-        time.setHint("Ex: 2:00 PM");
+        EditText minute = (EditText) findViewById(R.id.minute);
+        minute.setHint("Ex: 30 minutes");
 
         //pickup set default with current location
         EditText pickup = (EditText) findViewById(R.id.pickup);
@@ -117,12 +113,12 @@ public class RequestUber extends Activity {
         alert2.show();
     }
 
-    private void deployNotification() {
+    private void deployNotification(String message) {
         NotificationCompat.Builder Builder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.arrow)
-                        .setContentTitle("Uber Prepared")
-                        .setContentText("Hello World!")
+                        .setContentTitle("Uber Prepared!")
+                        .setContentText(message)
                         .setOngoing(true);
 
         int NotificationId = 001;
@@ -170,19 +166,19 @@ public class RequestUber extends Activity {
 
     public void submitClicked(View view) {
 
-        EditText date = (EditText) findViewById(R.id.date);
-        final String da = date.getText().toString();
+        EditText hour = (EditText) findViewById(R.id.hour);
+        final String h = hour.getText().toString();
 
-        EditText time = (EditText) findViewById(R.id.time);
-        final String t = time.getText().toString();
+        EditText minute = (EditText) findViewById(R.id.minute);
+        final String m = minute.getText().toString();
 
         EditText pickup = (EditText) findViewById(R.id.pickup);
         final String p = pickup.getText().toString();
 
         EditText destination = (EditText) findViewById(R.id.destination);
-        final String de = destination.getText().toString();
+        final String d = destination.getText().toString();
 
-        if (de.equals("") || t.equals("") || p.equals("") || de.equals("")) {
+        if (h.equals("") || m.equals("") || p.equals("") || d.equals("")) {
             Toast.makeText(this, "Please enter a value for all of the fields", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -191,7 +187,7 @@ public class RequestUber extends Activity {
         if (p.equals("Current Location")) {
             pickupCoords = getMyLocation();
             //confirm destination
-            final List<Address> dmatches = findGeoMatches(de);
+            final List<Address> dmatches = findGeoMatches(d);
 
             //give the user another chance
             if (dmatches == null || dmatches.size() == 0) return;
@@ -208,7 +204,7 @@ public class RequestUber extends Activity {
 
                             dialog.cancel();
                             buildSuccessAlert();
-                            deployNotification();
+                            deployNotification("");
                         }
                     })
                     .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -242,7 +238,7 @@ public class RequestUber extends Activity {
                             pickupCoords = new LatLng(pmatches.get(0).getLatitude(), pmatches.get(0).getLongitude());
 
                             //confirm destination
-                            final List<Address> dmatches = findGeoMatches(de);
+                            final List<Address> dmatches = findGeoMatches(d);
 
                             //give the user another chance
                             if (dmatches == null || dmatches.size() == 0) return;
@@ -259,7 +255,7 @@ public class RequestUber extends Activity {
 
                                             dialog.cancel();
                                             buildSuccessAlert();
-                                            deployNotification();
+                                            deployNotification("");
                                         }
                                     })
                                     .setNegativeButton("No", new DialogInterface.OnClickListener() {

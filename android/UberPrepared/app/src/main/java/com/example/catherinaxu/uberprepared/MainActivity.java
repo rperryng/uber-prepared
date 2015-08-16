@@ -3,6 +3,7 @@ package com.example.catherinaxu.uberprepared;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
@@ -10,8 +11,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.JsonArray;
@@ -31,6 +34,13 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getActionBar().hide();
+
+        TextView title = (TextView) findViewById(R.id.title);
+        Typeface font = Typeface.createFromAsset(getAssets(), "Domelen.ttf");
+        title.setTypeface(font);
+
+        Button submit = (Button) findViewById(R.id.submit);
+        submit.setTypeface(font);
     }
 
 

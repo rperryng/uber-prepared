@@ -7,6 +7,7 @@
     tools:context="com.example.catherinaxu.uberprepared.RequestUber"
     android:id="@+id/catherinaxu">
 
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -16,51 +17,49 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
 
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="date"
-        android:ems="10"
-        android:id="@+id/date"
-        android:layout_below="@+id/title"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="51dp" />
+    <LinearLayout
+        android:paddingTop="50dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="text"
         android:ems="10"
-        android:id="@+id/time"
-        android:layout_below="@+id/date"
-        android:layout_centerHorizontal="true" />
+        android:id="@+id/hour" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="text"
+        android:ems="10"
+        android:id="@+id/minute" />
 
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="textPostalAddress"
         android:ems="10"
-        android:id="@+id/pickup"
-        android:layout_below="@+id/time"
-        android:layout_alignStart="@+id/time" />
+        android:id="@+id/pickup" />
 
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="textPostalAddress"
         android:ems="10"
-        android:id="@+id/destination"
-        android:layout_below="@+id/pickup"
-        android:layout_centerHorizontal="true" />
+        android:id="@+id/destination"/>
+
+    </LinearLayout>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Confirm"
         android:id="@+id/button"
-        android:layout_below="@+id/destination"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="71dp"
-        android:onClick="submitClicked" />
+        android:onClick="submitClicked"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
