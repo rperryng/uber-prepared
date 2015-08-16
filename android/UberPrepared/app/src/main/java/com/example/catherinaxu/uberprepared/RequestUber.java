@@ -11,6 +11,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
@@ -41,6 +42,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONObject;
 
 
 public class RequestUber extends Activity {
@@ -50,6 +52,55 @@ public class RequestUber extends Activity {
     private static String mPhoneNumber;
     private static String mHours;
     private static String mMinutes;
+
+    private class HttpAsyncTask extends AsyncTask<Void, Void, Boolean> {
+        private String URL;
+        private String toSend;
+
+        public void GetJsonTask(String URL, String jsonObjSend) {
+            this.URL = URL;
+            this.toSend = jsonObjSend;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            Boolean result = false;
+            try {
+                DefaultHttpClient httpclient = new DefaultHttpClient();
+                HttpPost httpPostRequest = new HttpPost(URL);
+
+                StringEntity se;
+                se = new StringEntity(toSend);
+
+                // Set HTTP parameters
+                httpPostRequest.setEntity(se);
+                httpPostRequest.setHeader("Accept", "application/json");
+                httpPostRequest.setHeader("Content-type", "application/json");
+
+                HttpResponse response = (HttpResponse) httpclient.execute(httpPostRequest);
+
+                if (response.getStatusLine().getStatusCode() == 200) {
+                    result = true;
+                } else {
+                    result = false;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+
+            super.onPostExecute(result);
+
+            if (result) {
+                Toast.makeText(RequestUber.this, "Success! Uber requested.", Toast.LENGTH_SHORT).show();
+                deployNotification("");
+            }
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,20 +186,12 @@ public class RequestUber extends Activity {
         }
     }
 
-    private void buildSuccessAlert() {
-        AlertDialog.Builder builder2 = new AlertDialog.Builder(RequestUber.this);
-        builder2.setMessage("Uber booked successfully!");
-        AlertDialog alert2 = builder2.create();
-        alert2.show();
-    }
-
-    private void deployNotification(String message) {
+    public void deployNotification(String message) {
         NotificationCompat.Builder Builder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.arrow)
                         .setContentTitle("Uber Prepared!")
-                        .setContentText(message)
-                        .setOngoing(true);
+                        .setContentText(message);
 
         int NotificationId = 001;
 
@@ -193,8 +236,7 @@ public class RequestUber extends Activity {
         return address;
     }
 
-    public static void execute() {
-        //get phone
+    public static String makeJSON() {
 
 
         Map<String, String> comment = new HashMap<String, String>();
@@ -207,24 +249,7 @@ public class RequestUber extends Activity {
         comment.put("dest_lng", String.valueOf(mDestinationCoords.longitude));
 
         String json = new GsonBuilder().create().toJson(comment, Map.class);
-        makeRequest("URL", json);
-    }
-
-    public static HttpResponse makeRequest(String uri, String json) {
-        try {
-            HttpPost httpPost = new HttpPost(uri);
-            httpPost.setEntity(new StringEntity(json));
-            httpPost.setHeader("Accept", "application/json");
-            httpPost.setHeader("Content-type", "application/json");
-            return new DefaultHttpClient().execute(httpPost);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (ClientProtocolException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return json;
     }
 
     public void submitClicked(View view) {
@@ -264,13 +289,12 @@ public class RequestUber extends Activity {
                     .setCancelable(false)
                     .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            //http post request
                             dialog.cancel();
-                            buildSuccessAlert();
-                            deployNotification("");
-
                             mDestinationCoords = new LatLng(dmatches.get(0).getLatitude(), dmatches.get(0).getLongitude());
+                            HttpAsyncTask task = new HttpAsyncTask();
+                            task.GetJsonTask("https://9fcb1195.ngrok.io/android/data", makeJSON());
 
+                            task.execute();
                         }
                     })
                     .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -279,10 +303,11 @@ public class RequestUber extends Activity {
                         }
                     });
 
-                    AlertDialog alert = builder2.create();
-                    alert.show();
 
-        //do same for pickup as for dest
+            AlertDialog alert = builder2.create();
+            alert.show();
+
+            //do same for pickup as for dest
         } else {
             final List<Address> pmatches = findGeoMatches(p);
 
@@ -316,15 +341,12 @@ public class RequestUber extends Activity {
                                     .setCancelable(false)
                                     .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int id) {
-
-                                            // send HTTP post, and make sure it works
-
                                             dialog.cancel();
-                                            buildSuccessAlert();
-
-                                            deployNotification("");
-
                                             mDestinationCoords = new LatLng(dmatches.get(0).getLatitude(), dmatches.get(0).getLongitude());
+                                            HttpAsyncTask task = new HttpAsyncTask();
+                                            task.GetJsonTask("https://9fcb1195.ngrok.io/android/data", makeJSON());
+
+                                            task.execute();
                                         }
                                     })
                                     .setNegativeButton("No", new DialogInterface.OnClickListener() {
