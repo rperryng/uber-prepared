@@ -38,3 +38,12 @@ router.post('/data', function (req, res, next) {
 	  }
 	});  
 });
+
+router.post('/cancel', function(req, res, next) {
+	var user = req.user;
+  user.state = 'request-start';
+  user.save(function (err, user) {
+    if (err) return next(err);
+    res.sendStatus(200);
+  });
+})
