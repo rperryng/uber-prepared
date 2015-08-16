@@ -1,0 +1,89 @@
+@import 'fonts.less';
+@import 'util.less';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  * {
+    font-family: 'Open Sans', sans-serif;
+  }
+  h1 {
+    .f-proximaNova--heavy;
+    font-size: 2rem;
+    margin: 0.7rem 0;
+  }
+  h2 {
+    .f-proximaNova--heavy;
+    font-size: 1.75rem;
+    margin: 0.6rem 0;
+  }
+  h3 {
+    .f-proximaNova--heavy;
+    font-size: 1.5rem;
+    margin: 0.5rem 0;
+  }
+  h4 {
+    .f-proximaNova--heavy;
+    font-size: 1.4rem;
+    margin: 0.4rem 0;
+  }
+  h5 {
+    .f-proximaNova--heavy;
+    font-size: 1.3rem;
+    margin: 0.3rem 0;
+  }
+  h6 {
+    .f-proximaNova--heavy;
+    font-size: 1.2rem;
+    margin: 0.2rem 0;
+  }
+  a,
+  p,
+  span,
+  li,
+  input,
+  textarea,
+  button {
+    font-size: 1rem;
+    margin: 0;
+  }
+}
+
+header {
+  background-color: rgba(0, 0, 0, 0.6);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.35);
+  position: fixed;
+  width: 100%;
+}
+
+.navbar {
+  text-align: center;
+
+  &-list {
+    padding: 0;
+  }
+
+  &-list-item {
+    display: inline-block;
+  }
+
+  &-link {
+    color: rgba(255, 255, 255, 0.7);
+    padding: 15px;
+    text-transform: uppercase;;
+    text-decoration: none;
+    &:hover {
+      color: rgba(255, 255, 255, 1);
+    }
+  }
+}
+
+.fullScreenBanner {
+  min-height: 100%;
+}
