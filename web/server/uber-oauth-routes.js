@@ -65,10 +65,11 @@ router.get('/callback', function (req, res, next) {
       });
     },
     function (user, body, callback) {
+      logger.info('body', body);
       user = new User({
         uuid: uuid.v4(),
         number: number,
-        state: 'request-location',
+        state: 'request-start',
         access_token: body.access_token,
         refresh_token: body.refresh_token
       });

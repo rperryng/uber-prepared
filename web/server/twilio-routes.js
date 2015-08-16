@@ -17,10 +17,13 @@ app.use('/twilio', router);
 
 router.post('/register', function (req, res, next) {
   var number = req.body.number;
+  if (number.indexOf('+') !== -1) {
+    number = number.slice(1).trim();
+  }
 
   if (!number) {
     res.sendStatus(400);
-    sendMessage('Can\'t create user without phone number');
+    sendMessage('Can\'t create user without phone number', number);
     return;
   }
 
@@ -29,7 +32,7 @@ router.post('/register', function (req, res, next) {
 
     if (user) {
       res.sendStatus(400);
-      sendMessage('A user with phone number ' + number + ' already exists');
+      sendMessage('A user with phone number ' + number + ' already exists', number);
       return;
     }
 
@@ -44,7 +47,7 @@ router.post('/register', function (req, res, next) {
 
       res.sendStatus(200);
       sendMessage('User with ' + number + ' created successfully\n' +
-        'Type an address to request an Uber. Text CANCEL to cancel this request at any time.');
+        'Type an address to request an Uber. Text CANCEL to cancel this request at any time.', number);
     });
   });
 });
@@ -61,7 +64,12 @@ router.post('/callback',
 );
 
 function firstTimeUser(req, res, next) {
-  User.findOne({number: req.body.From}, function (err, user) {
+  var number = req.body.From;
+  if (number.indexOf('+') !== -1) {
+    number = number.slice(1).trim();
+  }
+
+  User.findOne({number: number}, function (err, user) {
     if (err) return next(err);
 
     // user exists, carry on
@@ -71,7 +79,7 @@ function firstTimeUser(req, res, next) {
 
     } else {
       res.sendStatus(200);
-      sendMessage('Looks like you haven\'t signed up yet.  Get started with the following link: http://uber-prepared.com/register');
+      sendMessage('Looks like you haven\'t signed up yet.  Get started with the following link: https://9fcb1195.ngrok.io/uber/signup/' + number, req.body.From);
       return;
     }
   });
@@ -85,7 +93,7 @@ function cancelMiddleware(req, res, next) {
   user.save(function (err, user) {
     if (err) return next(err);
     res.sendStatus(200);
-    sendMessage('Your request has been cancelled.  Text another address to start a new request.');
+    sendMessage('Your request has been cancelled.  Text another address to start a new request.', req.body.From);
   });
 }
 
@@ -104,7 +112,7 @@ function requestStart(req, res, next) {
     user.save(function (err, user) {
       if (err) return next(err);
       res.sendStatus(200);
-      sendMessage(data.name + '\n' + data.address + '\nIs this correct?');
+      sendMessage(data.name + '\n' + data.address + '\nIs this correct?', req.body.From);
     });
   });
 }
@@ -119,7 +127,7 @@ function confirmStart(req, res, next) {
     user.save(function (err, user) {
       if (err) return next(err);
       res.sendStatus(200);
-      sendMessage('What is your destination?');
+      sendMessage('What is your destination?', req.body.From);
     });
 
   } else {
@@ -131,7 +139,7 @@ function confirmStart(req, res, next) {
     user.save(function (err, user) {
       if (err) return next(err);
       res.sendStatus(200);
-      sendMessage('Oh no! Try being more specific.');
+      sendMessage('Oh no! Try being more specific.', req.body.From);
     });
   }
 }
@@ -151,7 +159,7 @@ function requestEnd(req, res, next) {
     user.save(function (err, user) {
       if (err) return next(err);
       res.sendStatus(200);
-      sendMessage(data.name + '\n' + data.address + '\nIs this correct?');
+      sendMessage(data.name + '\n' + data.address + '\nIs this correct?', req.body.From);
     });
   });
 }
@@ -167,7 +175,7 @@ function confirmEnd(req, res, next) {
     user.save(function (err, user) {
       if (err) return next(err);
       res.sendStatus(200);
-      sendMessage('How soon would you like to be picked up (in hours/minutes)?');
+      sendMessage('How soon would you like to be picked up (in hours/minutes)?', req.body.From);
     });
 
   } else {
@@ -179,7 +187,7 @@ function confirmEnd(req, res, next) {
     user.save(function (err, user) {
       if (err) return next(err);
       res.sendStatus(200);
-      sendMessage('Oh no! Try being more specific.');
+      sendMessage('Oh no! Try being more specific.', req.body.From);
     });
   }
 }
@@ -190,7 +198,7 @@ function requestTime(req, res, next) {
   var time = messageParser.parseTime(req.body.Body);
   if (time.hours <= 0 && time.minutes <= 0) {
     res.sendStatus(200);
-    sendMessage('Oh no! We couldn\'t understand that. Please enter how soon would you like to be picked up (in hours/minutes).');
+    sendMessage('Oh no! We couldn\'t understand that. Please enter how soon would you like to be picked up (in hours/minutes).', req.body.From);
     return;
   }
 
@@ -215,7 +223,7 @@ function requestTime(req, res, next) {
     timeConfirmationMessage += '?';
 
     res.sendStatus(200);
-    sendMessage(timeConfirmationMessage);
+    sendMessage(timeConfirmationMessage, req.body.From);
   });
 }
 
@@ -230,7 +238,7 @@ function confirmTime(req, res, next) {
     user.save(function (err, user) {
       if (err) return next(err);
       res.sendStatus(200);
-      sendMessage('Request successfully submitted.');
+      sendMessage('Request successfully submitted.', req.body.From);
     });
 
   } else {
@@ -239,7 +247,7 @@ function confirmTime(req, res, next) {
     user.save(function (err, user) {
       if (err) return next(err);
       res.sendStatus(200);
-      ('Oh no! Try entering a time with the following format: 5 hours, 30 minutes.');
+      sendMessage('Oh no! Try entering a time with the following format: 5 hours, 30 minutes.', req.body.From);
     });
   }
 }
@@ -251,15 +259,15 @@ router.use(function (err, req, res, next) {
 
   if (!res) return;
   res.sendStatus(500);
-  sendMessage('Something horrible has happened - See logs');
+  sendMessage('Something horrible has happened - See logs', req.body.From);
 });
 
 
-function sendMessage(message, callback) {
+function sendMessage(message, number, callback) {
   var options = {
     from: process.env.TWILIO_PHONE_NUM,
     to: number,
     body: message
-  }
+  };
   twilioClient.messages.create(options, callback);
 }

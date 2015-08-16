@@ -16,7 +16,7 @@ var userSchema = new Schema({
   	lat: Number,
   	lng: Number
   },
-  time: Number, 
+  time: Number,
   access_token: String,
   refresh_token: String
 });

@@ -19,7 +19,6 @@ function parseLocation(message, cb) {
 		if (err) return cb(err);
 
 		body = JSON.parse(body);
-		logger.info(body);
 		var bestMatch = body.results[0];
 		var data = {
 			address: bestMatch.formatted_address,
