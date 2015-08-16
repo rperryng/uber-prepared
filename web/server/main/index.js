@@ -24,20 +24,25 @@ var router = express.Router();
 app.use('/', router);
 
 router.get('/', function (req, res) {
-  if (req.session.isAuthenticated) {
-    return res.redirect('/login');
-  }
+  // if (req.session.isAuthenticated) {
+  //   return res.redirect('/login');
+  // }
+
+  res.render('home', {
+    scripts: ['home'],
+    styles: ['home']
+  });
+});
+
+router.get('/login', function (req, res) {
+  // if (req.session.isAuthenticated) {
+  //   return res.redirect('/');
+  // }
 
   res.render('login', {
     scripts: ['login'],
     styles: ['login']
   });
-});
-
-router.get('/login', function (req, res) {
-  if (req.session.isAuthenticated) {
-    return res.redirect('/');
-  }
 });
 
 router.use(function (err, req, res, next) {
