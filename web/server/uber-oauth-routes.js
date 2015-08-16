@@ -78,6 +78,7 @@ router.get('/callback', function (req, res, next) {
           lat: 0,
           lng: 0
         },
+        time: 0,
         access_token: body.access_token,
         refresh_token: body.refresh_token
       });
