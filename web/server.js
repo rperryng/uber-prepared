@@ -28,6 +28,7 @@ app.use(morgan('dev', {stream: logger.morganStream}));
 
 // Expose front end resources
 app.use('/client', express.static(__dirname + '/client/dist'));
+app.use('/fonts', express.static(__dirname + '/client/resources/fonts'));
 app.use('/bower_components', express.static(__dirname + '/bower_components'));
 
 // Routing

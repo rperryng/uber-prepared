@@ -5,13 +5,19 @@ html
     title Uber Prepared
     meta(name="viewport", content="width=device-width")
     
+    link(href="/bower_components/normalize.css/normalize.css", rel="stylesheet", type="text/css")
+    link(href="/bower_components/material-design-lite/material.min.css", rel="stylesheet", type="text/css")
+    link(href="/client/theme.css", rel="stylesheet", type="text/css")
+    
     if styles
       each style in styles
         link(href="/client/" + style + ".css", rel="stylesheet", type="text/css")
+        
+    script(src="/bower_components/material-design-lite/material.min.js" type="text/javascript")
       
     if scripts
       each script in scripts
-        script(href="/client/" + script + ".js", type="text/javascript")
+        script(src="/client/" + script + ".js", type="text/javascript")
         
-  body
+  body.bodyClass
     block content
