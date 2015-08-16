@@ -1,0 +1,9 @@
+extend main
+
+block content
+  main.card.u-widthWrapper.mdl-card.mdl-shadow--2dp
+    h1.title Uber Prepared
+    form.loginForm(name="login" onsubmit="return submitForm()")
+      div.mdl-textfield.mdl-js-textfield
+        input#phoneField.loginForm-field.mdl-textfield__input(type="tel")
+        label.loginForm-label.mdl-textfield__label(for="phoneField") 650 555 1234      

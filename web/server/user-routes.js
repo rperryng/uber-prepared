@@ -14,7 +14,7 @@ router.get('/:number', function(req, res, next) {
 	User.findOne({number: number}, function (err, user) {
 		if (err) return next(err);
 
-		res.json( {
+		res.json({
 			exists: (user !== null && user !== undefined)
 		});
 	});
