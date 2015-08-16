@@ -41,7 +41,17 @@ router.post('/register', function (req, res, next) {
       uuid: uuid.v4(),
       number: number,
       state: 'request-start',
-      token: 'null'
+      start: {
+        lat: 0,
+        lng: 0
+      },
+      end: {
+        lat: 0,
+        lng: 0
+      },
+      time: 0,
+      access_token: null,
+      refresh_token: null
     });
     user.save(function (err, user) {
       if (err) return next(err);

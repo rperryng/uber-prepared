@@ -70,6 +70,14 @@ router.get('/callback', function (req, res, next) {
         uuid: uuid.v4(),
         number: number,
         state: 'request-start',
+        start: {
+          lat: 0,
+          lng: 0
+        },
+        end: {
+          lat: 0,
+          lng: 0
+        },
         access_token: body.access_token,
         refresh_token: body.refresh_token
       });
