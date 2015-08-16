@@ -4,16 +4,18 @@ var express = require('express');
 var async = require('async');
 var request = require('request');
 var logger = require('logger');
+var twilio = require('twilio');
 var uuid = require('node-uuid');
 var User = require('./user.model.js');
 
 var app = module.exports = express();
+var twilioClient = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
 
 var router = express.Router();
 app.use('/uber', router);
 
 // TODO: get a domain
-var REDIRECT_URI = 'https://12e819b0.ngrok.io/uber/callback';
+var REDIRECT_URI = 'https://9fcb1195.ngrok.io/uber/callback';
 
 router.get('/signup/:number', function (req, res, next) {
   var number = req.params.number;
@@ -41,7 +43,6 @@ router.get('/callback', function (req, res, next) {
 
   async.waterfall([
     function (callback) {
-      logger.info('swag');
       var requestData = {
         client_secret: process.env.UBER_CLIENT_SECRET,
         client_id: process.env.UBER_CLIENT_ID,
@@ -74,14 +75,28 @@ router.get('/callback', function (req, res, next) {
       user.save(function (err, user) {
         callback(err, user);
       });
+    },
+    function (user, callback) {
+      var options = {
+        from: process.env.TWILIO_PHONE_NUM,
+        to: number,
+        body: 'You\'re all set! Text us an address to get started!'
+      };
+
+      logger.info('sending text %j', options);
+
+      twilioClient.messages.create(options, function (err, message) {
+        callback(err, message);
+      });
     }
-  ], function (err, user) {
+  ], function (err, message) {
     if (err) return next(err);
+
     res.sendStatus(200);
   });
 });
 
 app.use(function (err, req, res, next) {
-  logger.error(err.stack);
+  logger.error(err.stack || err);
   if (res) res.sendStatus(500);
 });
