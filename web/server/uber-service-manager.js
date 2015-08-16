@@ -12,11 +12,11 @@ module.exports = {
 // 2 STRONQ
 var UBER_BASE_URL = 'https://api.uber.com/v1';
 
-function placeOrder(order) {
+function placeOrder(user) {
 
   var url = UBER_BASE_URL + '/products?' + qs.stringify({
-    latitude: order.start.lat,
-    longitude: order.start.long
+    latitude: user.start.lat,
+    longitude: user.start.lng
   });
   var options = {
     url: url,
@@ -26,37 +26,39 @@ function placeOrder(order) {
   };
   request.get(options, function (err, response, body) {
     body = JSON.parse(body);
-    grabAverageWaitTimeForProducts(body.products, order);
+    grabAverageWaitTimeForProducts(body.products, user, user.access_token);
   });
 }
 
-function grabAverageWaitTimeForProducts(products, order) {
+function grabAverageWaitTimeForProducts(products, user, auth_token) {
   var totalTime = 0;
   async.each(products, function (product, callback) {
-    var url = UBER_BASE_URL + '/requests/estimate?' + qs.stringify({
+    var url = UBER_BASE_URL + '/requests/estimate';
+    var postData = {
       product_id: product.product_id,
-      start_latitude: order.start.lat,
-      start_longitude: order.start.long,
-      end_latitude: order.end.lat,
-      end_longitude: order.end.long
-    });
-    logger.info('finding estimate via: ' + url);
+      start_latitude: user.start.lat,
+      start_longitude: user.start.lng,
+      end_latitude: user.end.lat,
+      end_longitude: user.end.lng
+    };
 
     var options = {
       url: url,
       headers: {
-        'Authorization': 'Bearer ' + process.env.MY_UBER_ACCESS_TOKEN
-      }
+        'Authorization': 'Bearer ' + auth_token
+      },
+      body: postData,
+      json: true
     };
 
     request.post(options, function (err, response, body) {
-      body = JSON.parse(body);
+      if (err) logger.error(err.stack || err);
       totalTime += body.pickup_estimate;
-
-      logger.info('got: ' + JSON.stringify(body, null, 2));
       callback();
     });
+
   }, function (err) {
-    logger.info('average wait time: ' + totalTime / products.length);
+    var averageWaitTime = (totalTime / products.length);
+
   });
 }
