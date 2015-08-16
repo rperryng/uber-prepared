@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -17,7 +18,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -54,18 +57,26 @@ public class RequestUber extends Activity {
         setContentView(R.layout.activity_request_uber);
         getActionBar().hide();
 
+        TextView title = (TextView) findViewById(R.id.title);
+        Typeface font = Typeface.createFromAsset(getAssets(), "Domelen.ttf");
+        title.setTypeface(font);
+
+        Button submit = (Button) findViewById(R.id.submit);
+        submit.setTypeface(font);
+
         EditText hour = (EditText) findViewById(R.id.hour);
-        hour.setHint("Ex: 2");
+        hour.setHint("1");
 
         EditText minute = (EditText) findViewById(R.id.minute);
-        minute.setHint("Ex: 30");
+        minute.setHint("30");
 
         //pickup set default with current location
         EditText pickup = (EditText) findViewById(R.id.pickup);
         pickup.setText("Current Location");
+        pickup.setHint("Address");
 
         EditText destination = (EditText) findViewById(R.id.destination);
-        destination.setHint("Destination Address");
+        destination.setHint("Address");
 
         TelephonyManager tMgr = (TelephonyManager) RequestUber.this.getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
         mPhoneNumber = tMgr.getLine1Number();
@@ -257,6 +268,9 @@ public class RequestUber extends Activity {
                             dialog.cancel();
                             buildSuccessAlert();
                             deployNotification("");
+
+                            mDestinationCoords = new LatLng(dmatches.get(0).getLatitude(), dmatches.get(0).getLongitude());
+
                         }
                     })
                     .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -278,7 +292,7 @@ public class RequestUber extends Activity {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             String paddress = buildAddress(pmatches);
 
-            builder.setMessage("Is " + paddress + " your pickup location? -> ")
+            builder.setMessage("Is " + paddress + " your pickup location?")
                    .setCancelable(false)
                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
@@ -306,18 +320,11 @@ public class RequestUber extends Activity {
                                             // send HTTP post, and make sure it works
 
                                             dialog.cancel();
-                                            Log.d("test", "I'm here!!!");
                                             buildSuccessAlert();
 
                                             deployNotification("");
 
                                             mDestinationCoords = new LatLng(dmatches.get(0).getLatitude(), dmatches.get(0).getLongitude());
-
-                                            Log.d("test", mPickupCoords.toString());
-                                            Log.d("test", mDestinationCoords.toString());
-                                            Log.d("test", mPhoneNumber);
-                                            Log.d("test", mHours);
-                                            Log.d("test", mMinutes);
                                         }
                                     })
                                     .setNegativeButton("No", new DialogInterface.OnClickListener() {

@@ -25,6 +25,7 @@
         android:id="@+id/submit"
         android:nestedScrollingEnabled="false"
         android:onClick="submitClicked"
+        android:textColor="@color/white"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:textSize="25dp" />
