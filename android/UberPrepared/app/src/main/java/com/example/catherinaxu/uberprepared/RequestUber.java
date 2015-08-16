@@ -2,7 +2,9 @@ package com.example.catherinaxu.uberprepared;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -97,7 +99,7 @@ public class RequestUber extends Activity {
 
             if (result) {
                 Toast.makeText(RequestUber.this, "Success! Uber requested.", Toast.LENGTH_SHORT).show();
-                deployNotification("");
+                deployNotification("Tap to cancel");
             }
         }
     }
@@ -192,11 +194,22 @@ public class RequestUber extends Activity {
                         .setSmallIcon(R.drawable.arrow)
                         .setContentTitle("Uber Prepared!")
                         .setContentText(message);
-
         int NotificationId = 001;
 
         NotificationManager NotifyMgr =
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+        Intent notificationIntent = new Intent(getApplicationContext(), UberCancel.class);
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Notification.FLAG_AUTO_CANCEL);
+        PendingIntent resultPendingIntent =
+                PendingIntent.getActivity(
+                        this,
+                        0,
+                        notificationIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+        Builder.setAutoCancel(true);
+        Builder.setContentIntent(resultPendingIntent);
 
         NotifyMgr.notify(NotificationId, Builder.build());
     }

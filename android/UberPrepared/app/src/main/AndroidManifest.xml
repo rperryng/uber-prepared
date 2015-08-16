@@ -41,6 +41,10 @@
             android:name=".WebViewActivity"
             android:label="@string/title_activity_web_view" >
         </activity>
+        <activity
+            android:name=".UberCancel"
+            android:label="@string/title_activity_uber_cancel" >
+        </activity>
     </application>
 
 </manifest>

@@ -6,5 +6,6 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_request_uber">RequestUber</string>
     <string name="title_activity_web_view">WebViewActivity</string>
+    <string name="title_activity_uber_cancel">UberCancel</string>
 
 </resources>
