@@ -8,6 +8,9 @@ var env = require('node-env-file');
 var mongoose = require('mongoose');
 
 env(__dirname + '/.env');
+var agendaInstance = require('./agenda-instance.js');
+
+agendaInstance.start();
 
 var app = express();
 
@@ -31,6 +34,11 @@ app.use(require('./server/uber-service-routes.js'));
 
 app.use(function (req, res, next) {
   res.sendStatus(404);
+});
+
+app.use(function (err, req, res, next) {
+  logger.error(err.stack || err);
+  if (res) res.sendStatus(500);
 });
 
 app.listen(process.env.PORT, function () {

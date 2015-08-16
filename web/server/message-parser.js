@@ -2,6 +2,7 @@
 
 var request = require('request');
 var logger = require('logger');
+var qs = require('querystring');
 
 module.exports = {
 	parseLocation: parseLocation,
@@ -10,13 +11,14 @@ module.exports = {
 	parseCancel: parseCancel
 };
 
-function parseLocation(message, cb) {
-	var url = 'https://maps.googleapis.com/maps/api/place/textsearch/json';
-	url += '?query=' + encodeURIComponent(message);
-	url += '&key=' + process.env.API_KEY;
+function parseLocation(message, callback) {
+	var url = 'https://maps.googleapis.com/maps/api/place/textsearch/json?' + qs.stringify({
+		query: message,
+		key: process.env.GOOGLE_PLACES_API_KEY
+	});
 
 	request.get({url: url}, function (err, response, body) {
-		if (err) return cb(err);
+		if (err) return callback(err);
 
 		body = JSON.parse(body);
 		var bestMatch = body.results[0];
@@ -26,7 +28,7 @@ function parseLocation(message, cb) {
 			name: bestMatch.name
 		};
 
-		cb(null, data);
+		callback(null, data);
 	});
 }
 
@@ -53,7 +55,10 @@ function parseTime(message) {
 		}
 	}
 
-	return {hours: hours, minutes: minutes};
+	return {
+		hours: hours,
+		minutes: minutes
+	};
 }
 
 function parseCancel(message) {
