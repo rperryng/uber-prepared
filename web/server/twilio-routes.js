@@ -32,7 +32,7 @@ router.post('/register', function (req, res, next) {
     user = new User({
       uuid: uuid.v4(),
       number: number,
-      state: 'request-location',
+      state: 'request-start',
       token: 'null'
     });
     user.save(function (err, user) {
@@ -47,8 +47,10 @@ router.post('/register', function (req, res, next) {
 router.post('/callback',
   firstTimeUser,
   cancelMiddleware,
-  requestLocation,
-  confirmLocation,
+  requestStart,
+  confirmStart,
+  requestEnd,
+  confirmEnd,
   requestTime,
   confirmTime
 );
@@ -73,21 +75,25 @@ function cancelMiddleware(req, res, next) {
   if (!messageParser.parseCancel(req.body.Body)) return next();
 
   var user = req.user;
-  user.state = 'request-location';
+  user.state = 'request-start';
   user.save(function (err, user) {
     if (err) return next(err);
     res.status(200).send('Your request has been cancelled.  Text another address to start a new request.');
   });
 }
 
-function requestLocation(req, res, next) {
-  if (req.user.state !== 'request-location') return next();
+function requestStart(req, res, next) {
+  if (req.user.state !== 'request-start') return next();
 
   messageParser.parseLocation(req.body.Body, function (err, data) {
   	if (err) return next(err);
 
     var user = req.user;
-    user.state = 'confirm-location';
+    user.state = 'confirm-start';
+    user.start = {
+      lat: data.location.lat,
+      lng: data.location.lng
+    };
     user.save(function (err, user) {
       if (err) return next(err);
       res.status(200).send(data.name + '\n' + data.address + '\nIs this correct?');
@@ -95,8 +101,52 @@ function requestLocation(req, res, next) {
   });
 }
 
-function confirmLocation(req, res, next) {
-  if (req.user.state !== 'confirm-location') return next();
+function confirmStart(req, res, next) {
+  if (req.user.state !== 'confirm-start') return next();
+
+  var confirmed = messageParser.parseConfirmation(req.body.Body);
+  var user = req.user;
+  if (confirmed) {
+    user.state = 'request-end';
+    user.save(function (err, user) {
+      if (err) return next(err);
+      res.status(200).send('What is your destination?');
+    });
+
+  } else {
+    user.state = 'request-start';
+    user.start = {
+      lat: 0,
+      lng: 0
+    };
+    user.save(function (err, user) {
+      if (err) return next(err);
+      res.status(200).send('Oh no! Try being more specific.');
+    });
+  }
+}
+
+function requestEnd(req, res, next) {
+  if (req.user.state !== 'request-end') return next();
+
+  messageParser.parseLocation(req.body.Body, function (err, data) {
+    if (err) return next(err);
+
+    var user = req.user;
+    user.state = 'confirm-end';
+    user.end = {
+      lat: data.location.lat,
+      lng: data.location.lng
+    };
+    user.save(function (err, user) {
+      if (err) return next(err);
+      res.status(200).send(data.name + '\n' + data.address + '\nIs this correct?');
+    });
+  });
+}
+
+function confirmEnd(req, res, next) {
+  if (req.user.state !== 'confirm-end') return next();
 
   var confirmed = messageParser.parseConfirmation(req.body.Body);
   var user = req.user;
@@ -109,7 +159,11 @@ function confirmLocation(req, res, next) {
     });
 
   } else {
-    user.state = 'request-location';
+    user.state = 'request-end';
+    user.end = {
+      lat: 0,
+      lng: 0
+    };
     user.save(function (err, user) {
       if (err) return next(err);
       res.status(200).send('Oh no! Try being more specific.');
@@ -166,7 +220,6 @@ function confirmTime(req, res, next) {
   } else {
     user.state = 'request-time';
     user.time = 0;
-    logger.info('set time back to 0');
     user.save(function (err, user) {
       if (err) return next(err);
       res.status(200).send('Oh no! Try entering a time with the following format: 5 hours, 30 minutes.');
