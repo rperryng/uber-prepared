@@ -25,6 +25,7 @@ app.use(morgan('dev', {stream: logger.morganStream}));
 
 app.use(require('./server/twilio-routes.js'));
 app.use(require('./server/uber-oauth-routes.js'));
+app.use(require('./server/user-routes.js'));
 
 app.use(function (req, res, next) {
   res.sendStatus(404);
