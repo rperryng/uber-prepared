@@ -9,12 +9,29 @@ var twilio = require('twilio');
 var User = require('./user.model.js');
 var messageParser = require('./message-parser.js');
 var uberServiceManager = require('./uber-service-manager.js');
+var agendaInstance = require('../agenda-instance.js');
 
 var app = module.exports = express();
 var twilioClient = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
 
 var router = express.Router();
 app.use('/twilio', router);
+
+router.use(function (req, res, next) {
+  if (req.body && req.body.Body && req.body.Body.toLowerCase() === 'ubercancel') {
+    var number = req.body.From;
+    if (number.indexOf('+') !== -1) {
+      number = number.slice(1).trim();
+    }
+    agendaInstance.cancel({name: number}, function (err, numRemoved) {
+      if (err) return next(err);
+      logger.info('Removed job ' + number);
+      sendText('Your uber has been cancelled', number);
+    });
+  }
+
+  next();
+});
 
 router.post('/register', function (req, res, next) {
   var number = req.body.number;
@@ -58,7 +75,7 @@ router.post('/register', function (req, res, next) {
 
       res.sendStatus(200);
       sendText('User with ' + number + ' created successfully\n' +
-        'Type an address to request an Uber. Text CANCEL to cancel this request at any time.', number);
+        'Type an address to request an Uber. Text UBERCANCEL to cancel this request at any time.', number);
     });
   });
 });
