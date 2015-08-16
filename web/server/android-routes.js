@@ -4,7 +4,7 @@ var express = require('express');
 var uuid = require('node-uuid');
 var moment = require('moment');
 var uberServiceManager = require('./uber-service-manager.js');
-var User = require('./user.model.js')
+var User = require('./user.model.js');
 
 var app = module.exports = express();
 
@@ -36,14 +36,14 @@ router.post('/data', function (req, res, next) {
 		  });
 		  uberServiceManager.placeOrder(user);
 	  }
-	});  
+	});
 });
 
 router.post('/cancel', function (req, res, next) {
 	var number = req.body.phone;
 
 	// find user by number
-	User.findOne({number: body.phone}, function (err, user) {
+	User.findOne({number: number}, function (err, user) {
     if (err) return next(err);
 
     if (user) {
@@ -54,4 +54,4 @@ router.post('/cancel', function (req, res, next) {
 		  });
 	  }
 	});
-})
+});
