@@ -36,24 +36,24 @@ function parseConfirmation(message) {
 }
 
 function parseTime(message) {
-	var time = /^(\d\d?)\s?:?\s?(\d\d)?\s?(\w)?/i.exec(message);
-	var hours = time[1];
-	var minutes = time[2] || 0;
-	var marker = time[3];
+	var time = /^(\d\d?)[^\d]*([mh])[^\d]*(\d\d?)?/i.exec(message);
+	var hoursOrMins = time[1];
+	var timeUnit = time[2];
+	var minutesOrNothing = time[3] || 0;
 
 	logger.info('TimeParser hours %d minutes %d', hours, minutes);
 
-	if (!hours && (hours < 0 || hours >= 24)) {
-		hours = undefined;
-	}
+	var hours;
+	var minutes;
 
-	if (!minutes && (minutes < 0 || minutes >= 60)) {
-		minutes = undefined;
-	}
-
-	if ((hours !== undefined && hours !== null) && (hours < 12 && marker !== undefined)) {
-		hours = parseInt(hours);
-		hours += (marker.toLowerCase() === 'p') ? 12 : 0;
+	if (hoursOrMins && timeUnit) {
+		if (timeUnit.toLowerCase() === 'h') {
+			hours = hoursOrMins;
+			minutes = minutesOrNothing;
+		} else {
+			hours = 0;
+			minutes = hoursOrMins;
+		}
 	}
 
 	return {hours: hours, minutes: minutes};

@@ -104,7 +104,7 @@ function confirmLocation(req, res, next) {
     user.state = 'request-time';
     user.save(function (err, user) {
       if (err) return next(err);
-      res.status(200).send('What time would you like to be picked up?');
+      res.status(200).send('How soon would you like to be picked up (in hours/minutes)?');
     });
 
   } else {
@@ -121,7 +121,7 @@ function requestTime(req, res, next) {
 
   var time = messageParser.parseTime(req.body.Body);
   if (!time.hours || !time.minutes) {
-    res.status(200).send('Oh no! We couldn\'t understand that. Please enter your pick-up time again.');
+    res.status(200).send('Oh no! We couldn\'t understand that. Please enter how soon would you like to be picked up (in hours/minutes).');
   }
 
   var user = req.user;
@@ -129,7 +129,17 @@ function requestTime(req, res, next) {
   user.save(function (err, user) {
     if (err) return next(err);
     logger.info('hours %d minutes %d', time.hours, time.minutes);
-    res.status(200).send('Pick up at ' + time.hours + ":" + ((time.minutes === 0) ? '00' : time.minutes) + '?');
+
+    var timeConfirmationMessage = 'Pick up in ';
+    if (time.hours !== 0) {
+      timeConfirmationMessage += time.hours + ' hours';
+      if (time.minutes !== 0) {
+        timeConfirmationMessage += ' and ';
+      }
+    }
+    timeConfirmationMessage += ((time.minutes) ? time.minutes : 0) + ' minutes?';
+
+    res.status(200).send(timeConfirmationMessage);
   });
 }
 
@@ -150,7 +160,7 @@ function confirmTime(req, res, next) {
     user.state = 'request-time';
     user.save(function (err, user) {
       if (err) return next(err);
-      res.status(200).send('Oh no! Please enter your pick-up time again.');
+      res.status(200).send('Oh no! Try entering a time with the following format: 5 hours, 30 minutes.');
     });
   }
 }
