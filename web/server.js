@@ -17,14 +17,27 @@ var app = express();
 // Connect to MongoDB
 mongoose.connect(process.env.DB_URI);
 
+// Rendering options
+app.set('view engine', 'jade');
+app.set('views', __dirname + '/server/views');
+
 // Parse url encoded form data
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true
 }));
 
+app.get('/registration-complete', function (req, res, next) {
+  res.render('registration-complete');
+});
+
 // Request logging
 app.use(morgan('dev', {stream: logger.morganStream}));
+
+// Expose front end resources
+app.use('/client', express.static(__dirname + '/client/dist'));
+app.use('/fonts', express.static(__dirname + '/client/resources/fonts'));
+app.use('/bower_components', express.static(__dirname + '/bower_components'));
 
 // Routing
 app.use(require('./server/twilio-routes.js'));
@@ -32,6 +45,7 @@ app.use(require('./server/uber-oauth-routes.js'));
 app.use(require('./server/user-routes.js'));
 app.use(require('./server/uber-service-routes.js'));
 app.use(require('./server/android-routes.js'));
+app.use(require('./server/main'));
 
 app.use(function (req, res, next) {
   res.sendStatus(404);
