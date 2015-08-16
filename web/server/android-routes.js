@@ -52,8 +52,6 @@ router.post('/cancel', function (req, res, next) {
 		    if (err) return next(err);
 		    res.sendStatus(200);
 		  });
-
-		  uberServiceManager.placeOrder(user);
 	  }
 	});
 })
