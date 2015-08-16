@@ -65,6 +65,7 @@ router.get('/callback', function (req, res, next) {
       });
     },
     function (user, body, callback) {
+      logger.info('body', body);
       user = new User({
         uuid: uuid.v4(),
         number: number,

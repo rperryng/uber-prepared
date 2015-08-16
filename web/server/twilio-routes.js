@@ -54,11 +54,13 @@ router.post('/callback',
 );
 
 function firstTimeUser(req, res, next) {
+  logger.info('whats happening');
   User.findOne({number: req.body.From}, function (err, user) {
     if (err) return next(err);
 
     // user exists, carry on
     if (user) {
+      logger.info('whats happening');
       req.user = user;
       return next();
 
